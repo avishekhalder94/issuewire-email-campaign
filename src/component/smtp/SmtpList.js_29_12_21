@@ -1,0 +1,141 @@
+import React, { useState } from "react"
+// import { Link } from "react-router-dom"
+import { QueryClient, QueryClientProvider, useQuery, usePaginatedQuery } from 'react-query';
+
+import Breadcrumb from "../common/Breadcum.js";
+
+
+const SmtpList = () => {
+
+
+    // const fetchProjects = (page) => fetch('https://swapi.dev/api/planets/?page='+page).then((res) => res.json());
+    // const fetchPlanets = async (key, page) => {
+    //     // console.log(page);
+    //     const res = await fetch('https://swapi.dev/api/planets/?page='+page);
+    //     return res.json();
+    // }
+
+    // const [page, setPage] = useState(1);
+    // console.log(data);
+    // console.log(status);
+
+    // const { isLoading, error, data, isFetching } = useQuery("repoData", () =>
+    //         fetch(
+    //         "https://swapi.dev/api/planets/?page=1"
+    //         ).then((res) => res.json())
+    //     );
+
+    const [page, setPage] = React.useState(1);
+
+    const fetchProjects = (page = 0) => fetch('http://emailcampaign.frontpews.com/api/smtp/page=' + page)
+        .then((res) => res.json())
+
+    const {
+        isLoading,
+        isError,
+        error,
+        data,
+        isFetching,
+        isPreviousData,
+    } = useQuery(['results', page], () => fetchProjects(page), { keepPreviousData: true, staleTime: 5000 })
+
+    //useQuery('Planets', fetchPlanets)
+    console.log(data);
+
+
+    return (
+        <>
+              <div className="content-wrapper" style={{ minHeight: "1345.31px" }}>
+              <Breadcrumb heading={'SMTP Add Form'} breadcum={['Home', 'SMTP ADD']} />
+                <section className="content">
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="card-title">Responsive Hover Table</h3>
+
+                                    <div className="card-tools">
+                                        <div className="input-group input-group-sm" style={{ width: "150px" }}>
+                                            <input type="text" name="table_search" className="form-control float-right" placeholder="Search" />
+                                            <div className="input-group-append">
+                                                <button type="submit" className="btn btn-default">
+                                                    <i className="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="card-body table-responsive p-0">
+                                    <table className="table table-hover text-nowrap">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>SMTP Name</th>
+                                                <th>SMTP Host</th>
+                                                <th>SMTP Port</th>
+                                                <th>SMTP Username</th>
+                                                <th>SMTP Password</th>
+                                                <th>SMTP Encryption</th>
+                                                <th>From Name</th>
+                                                <th>From Email</th>
+                                                <th>Status</th>
+                                                <th>Bounce Email</th>
+                                                <th>Bounce Username</th>
+                                                <th>Bounce Port</th>
+                                            </tr>
+                                        </thead>
+                                        
+                                            {isLoading ? (
+                                                <tbody key={'1234'}><tr key={'1234'}><td key={'1234'}><p>is loading...</p></td> </tr></tbody>
+                                            ) : isError ? (
+                                                <tbody key={'1234'}><tr key={'4321'}><td key={'1234'}><p>is Error..</p></td> </tr></tbody>
+                                            ) : (
+                                                <tbody key={'54asd5'}>
+                                                    {data.results.map((smtp,i) => (
+                                                        <tr key={i}>
+                                                            <td key={i}><p>{i+1}</p></td>
+                                                            <td>{smtp.smtp_name}</td>
+                                                            <td>{smtp.smtp_host}</td>
+                                                            <td>{smtp.smtp_port}</td>
+                                                            <td>{smtp.smtp_username}</td>
+                                                            <td>{smtp.smtp_password}</td>
+                                                            <td>{smtp.smtp_encryption}</td>
+                                                            <td>{smtp.from_name}</td>
+                                                            <td>{smtp.from_email}</td>
+                                                            <td>{smtp.smtp_status}</td>
+                                                            <td>{smtp.bounce_email}</td>
+                                                            <td>{smtp.bounce_username}</td>
+                                                            <td>{smtp.bounce_port}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            )}
+                                    </table>
+                                    < nav >
+                                    <ul className= "pagination justify-content-center" >
+                                        <li className={ page == 1 ? "page-item disabled" : "page-item" }>
+                                            <a className="page-link" href = "#"  onClick = {() => setPage(old => Math.max(old , 1))}> Previous </a>            
+                                        </li>
+
+                                        < li className = "page-item" > 
+                                            <a className="page-link" href = "#" > { page } </a>
+                                        </li >
+                                        <li className={ (isPreviousData || !data?.hasMore) ? "page-item" : "page-item disabled" }>
+                                            <a className="page-link" href = "#" onClick = {() => {setPage(old => (data?.hasMore ? old  : old + 1))}}> Next </a>
+                                        </li>
+                                    </ul>
+                                    </nav>
+                                </div>
+                            
+                            </div>
+                            
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </>
+    )
+}
+
+
+export default SmtpList;

@@ -1,0 +1,182 @@
+import React, { useState,useEffect } from "react"
+// import { setDatasets } from "react-chartjs-2/dist/utils";
+// import { Link } from "react-router-dom"
+import Breadcrumb from "../../common/Breadcum.js";
+import axios from 'axios';
+
+const AddEmailList = () => {
+
+    const [data, setData] = useState({
+        user_group: "",
+        txtfile: null
+    });
+
+    const [formValues, setFormValues] = useState(data);
+    const [formErrors, setFormErrors] = useState({});
+
+
+    const handelInput = (e) => {
+        const { name, value } = e.target;
+        setFormValues({ ...formValues, [name]: value });
+        setFormErrors(validate(formValues));
+    }
+
+    const filelInput = (e) => {
+
+        const { name, value } = e.target;
+        setFormValues({ ...formValues, [name]: e.target.files[0] });
+        setFormErrors(validate(formValues));
+
+
+    }
+
+    useEffect(() => {
+        //if (Object.keys(formErrors) === 0 ) {
+            // console.log(formValues)
+        //}
+    }, [formErrors])
+
+    const validate = (value) => {
+
+        const error = {}
+        if (!value.user_group) {
+            error.user_group = "User Group name is required.";
+        }
+        // ################
+        console.log(value.txtfile["type"])
+        if (!value.txtfile["type"] === "text/plain") {
+
+            error.txtfile = "Upload only txt file";
+        }else{
+
+            error.txtfile = "Upload only txt file no";
+        }
+          
+
+        return error;
+
+    }
+    const [selectedFile, setselectedFile] = useState(null);
+    const [user_grp_name, setuser_grp_name] = useState("");
+
+    const onFileChange = (e) => {
+        // this.setState({ selectedFile: event.target.files[0] });
+        // alert("sdfs");
+        setselectedFile(e.target.files[0]);
+    };
+
+    const formsubmit = (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append(
+            "upload_email_list",
+            selectedFile,
+            selectedFile.name
+          );
+        formData.append(
+            "user_group",
+            user_grp_name
+          );
+        //   alert(user_grp_name);
+        // console.log(user_grp_name);
+        const config = {     
+            headers: { 'content-type': 'multipart/form-data' }
+        }
+        axios({
+            method: 'post',
+            url: 'http://emailcampaign.frontpews.com/api/emailqueue',
+            data: formData,
+            config: config
+        }).then(function (response) {
+            console.log(response);
+            // alert(response);
+            // var frm = document.getElementById("addemailfrm");
+            // frm.reset();
+            setuser_grp_name("");
+        });
+    }
+
+    // const handelInput = (e) => {
+    //     // const name = e.target.name;
+    //     const value = e.target.value;
+    //     setuser_grp_name(value);
+    // //    alert(value);
+    //     // console.log(data.smtp_name);
+    // }
+
+    return (
+        <>
+            <div className="content-wrapper" style={{ minHeight: "1345.31px" }}>
+                <Breadcrumb heading={'SMTP Add Form'} breadcum={['Home', 'Add Email Group']} />
+                {/* <!-- Main content --> */}
+                <section className="content">
+                    <div className="container-fluid">
+                        <div className="row">
+                            {/* <!-- left column --> */}
+                            <div className="col-md-12">
+                                {/* <!-- general form elements --> */}
+                                <div className="card card-primary">
+                                    <div className="card-header">
+                                        <h3 className="card-title">{JSON.stringify(formValues, undefined, 2)}</h3>
+                                    </div>
+                                    {/* <!-- /.card-header --> */}
+                                    {/* <!-- form start --> */}
+                                    <form id="addemailfrm" onSubmit={(e) => formsubmit(e)} >
+                                        <div className="card-body">
+                                            <div className="form-group">
+                                                <label htmlFor="user_group">User Group <code>{formErrors.user_group}</code> </label>
+                                                <input type="text"
+                                                    className="form-control"
+                                                    name="user_group"
+                                                    id="user_group"
+                                                    placeholder="User Group"
+                                                    onChange={handelInput}
+                                                    value={formValues.user_group}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label htmlFor="txtfile">File input <code>{formErrors.txtfile}</code></label>
+                                                <div className="input-group">
+                                                <div className="custom-file">
+                                                    <input type="file" 
+                                                    className="custom-file-input" 
+                                                    name="txtfile" 
+                                                    id="txtfile"
+                                                    accept=".txt" 
+                                                    onChange={filelInput}
+                                                    />
+                                                    <label className="custom-file-label" htmlFor="txtfile">Choose file</label>
+                                                </div>
+                                                {/* <div className="input-group-append">
+                                                    <span className="input-group-text">Upload</span>
+                                                </div> */}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* <!-- /.card-body --> */}
+
+                                        <div className="card-footer">
+                                            <button type="submit" className="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            {/* <!--/.col (left) --> */}
+                            {/* <!-- right column --> */}
+
+                            {/* <!--/.col (right) --> */}
+                        </div>
+                        {/* <!-- /.row --> */}
+                    </div>
+                    {/* <!-- /.container-fluid --> */}
+                </section>
+                {/* <!-- /.content --> */}
+            </div>
+        </>
+    )
+
+}
+
+
+
+export default AddEmailList;

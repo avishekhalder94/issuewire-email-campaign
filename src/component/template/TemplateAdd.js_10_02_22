@@ -1,0 +1,252 @@
+import React, { useState, useEffect } from "react"
+// import { setDatasets } from "react-chartjs-2/dist/utils";
+// import { Link } from "react-router-dom"
+// import Breadcrumb from ".././common/Breadcum.js"
+import Breadcrumb from "../../common/Breadcum.js"
+import Navbar from '../../navbar/Navbar.js';
+import Sidebar from '../../sidebar/Sidebar.js';
+
+import axios from 'axios';
+import swal from 'sweetalert';
+
+const TemplateAdd = () => {
+
+    const [data, setData] = useState({
+        temp_name: "",
+        template: "",
+        template_field: ""
+    });
+
+    // const [formValues, setFormValues] = useState(data);
+    const [formErrors, setFormErrors] = useState({});
+    const [isSubmit, setIsSubmit] = useState(false);
+
+    const [formValues, setFormValues] = useState([
+        { keyname: "", keyvalue: "" }
+    ])
+
+    let addFormFields = () => {
+        setFormValues([...formValues, { keyname: "", keyvalue: "" }])
+    }
+
+    let removeFormFields = (i) => {
+        let newFormValues = [...formValues];
+        newFormValues.splice(i, 1);
+        setFormValues(newFormValues)
+    }
+
+    let handleChange = (i, e) => {
+
+
+        let newFormValues = [...formValues];
+        newFormValues[i][e.target.name] = e.target.value;
+        setFormValues(newFormValues);
+
+        // setFormErrors(validate(newFormValues));
+
+        const newdata = { ...data };
+        const name = e.target.name;
+        const value = e.target.value;
+        newdata[name] = value;
+        newdata["template_field"] = JSON.stringify(formValues);
+
+        setData(newdata);
+
+        setFormErrors(validate(newdata));
+    }
+
+    const handelInput = (e) => {
+        const newdata = { ...data };
+        const name = e.target.name;
+        const value = e.target.value;
+        newdata[name] = value;
+        newdata["template_field"] = JSON.stringify(formValues);
+        setData(newdata);
+        setFormErrors(validate(newdata));
+        // console.log(data.smtp_name);
+    }
+
+    const validate = (value) => {
+
+        const error = {};
+        if (!value.temp_name) {
+            error.temp_name = "Template name is required.";
+        }
+        if (value.temp_name.length < 3) {
+            error.temp_name = "Template name min length is 3.";
+        }
+
+        if (value.template.length < 20 ) {
+            error.template = "Template field min length is 20.";
+        }
+        if (!value.template) {
+            error.template = "Template field is required.";
+        }
+        // console.log(value.template_field);
+        // let obj = JSON.parse(value.template_field)
+        // console.log(obj[0])
+
+        // let obj = JSON.parse(value.template_field);
+        // console.log(obj)
+
+        return error;
+    }
+
+
+    useEffect(() => {
+
+        console.log(formErrors)
+
+    }, [formErrors])
+
+    async function smtpsubmit(e) {
+        e.preventDefault();
+
+        await setFormErrors(validate(data));
+        console.log(data);
+        await setIsSubmit(true)
+
+        await setTimeout(() => {
+            
+            // alert(Object.keys(formErrors).length)
+            if (Object.keys(formErrors).length === 0) {
+                alert("form submited")
+
+                axios({
+                    method: 'post',
+                    url: 'http://emailcampaign.frontpews.com/public/api/template',
+                    data: data
+                }).then(function (response) {
+                    console.log(response);
+                    // alert(response);
+                    swal("Form Added Sucessfully.");
+                    setData({ temp_name: "", template: "", template_field: "" });
+                    setFormValues([{ keyname: "", keyvalue: "" }])
+
+                });
+            }
+
+
+        }, 2000);
+        // alert(Object.keys(formErrors).length)
+
+    }
+
+    return (
+        <>
+            <Navbar />
+            <Sidebar />
+            <div className="content-wrapper" style={{ minHeight: "1345.31px" }}>
+                <Breadcrumb heading={'Template Add Form'} breadcum={['Home', 'Template ADD']} />
+                {/* <!-- Main content --> */}
+                <section className="content">
+                    <div className="container-fluid">
+                        <div className="row">
+                            {/* <!-- left column --> */}
+                            <div className="col-md-12">
+                                {/* <!-- general form elements --> */}
+                                <div className="card card-primary">
+                                    <div className="card-header">
+                                        <h3 className="card-title"></h3>
+                                    </div>
+                                    {/* <!-- /.card-header --> */}
+                                    {/* <!-- form start --> */}
+                                    <form onSubmit={(e) => smtpsubmit(e)}>
+
+                                        <div className="card-body">
+
+                                            {/* <Htmlinput nameid={'smtpname'} label={'SMTP Name'} placeholder={'SMTP Name'} value={data.smtpname} onsumt={handelInput}/> */}
+                                            <div className="form-group">
+                                                <label htmlFor="temp_name">Template Name <code>{formErrors.temp_name}</code></label>
+                                                <input type="text"
+                                                    className="form-control"
+                                                    name="temp_name"
+                                                    id="temp_name"
+                                                    placeholder="Template Name"
+                                                    value={data.temp_name}
+                                                    onChange={handelInput}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label htmlFor="template">Template HTML <code>{formErrors.template}</code></label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="template"
+                                                    name="template"
+                                                    placeholder="Template HTML"
+                                                    value={data.template}
+                                                    onChange={handelInput}
+                                                    row="10"
+                                                />
+                                            </div>
+                                            {formValues && formValues.map((element, index) => (
+                                                <div className="row" key={index}>
+                                                    <div className="col-md-5">
+                                                        <div className="form-group">
+                                                            <label htmlFor="keyname">Template Key {index + 1}</label>
+                                                            <input type="text"
+                                                                className="form-control"
+                                                                name="keyname"
+                                                                id="keyname"
+                                                                value={element.keyname || ""}
+                                                                placeholder="Key Name"
+                                                                onChange={e => handleChange(index, e)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-5">
+                                                        <div className="form-group">
+                                                            <label htmlFor="keyvalue">Template Value {index + 1}</label>
+                                                            <input type="text"
+                                                                className="form-control"
+                                                                name="keyvalue"
+                                                                id="keyvalue"
+                                                                value={element.keyvalue || ""}
+                                                                placeholder="Key Value"
+                                                                onChange={e => handleChange(index, e)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-2  mt-4">
+                                                        <div className="form-group">
+                                                            <p className="btn btn-danger"
+                                                                onClick={() => removeFormFields(index)}
+                                                            >-</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            <div className="card-footer">
+                                                <p className="btn btn-success"
+                                                    onClick={() => addFormFields()}
+                                                >Add</p>
+                                            </div>
+                                        </div>
+                                        {/* <!-- /.card-body --> */}
+
+                                        <div className="card-footer">
+                                            <button type="submit" className="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            {/* <!--/.col (left) --> */}
+                            {/* <!-- right column --> */}
+
+                            {/* <!--/.col (right) --> */}
+                        </div>
+                        {/* <!-- /.row --> */}
+                    </div>
+                    {/* <!-- /.container-fluid --> */}
+                </section>
+                {/* <!-- /.content --> */}
+            </div>
+        </>
+    )
+
+}
+
+
+
+export default TemplateAdd;
